@@ -20,8 +20,38 @@ int count = 0;
 
 // Variaveis de controle
 int posIndex = 0;
-int dadosPos[11];
+const int nPosDados = 11;
+int dadosPos[nPosDados];
+int tempPos[nPosDados];
 
+void atualizaControle(char incomingByte){
+  /*
+   * Funcao utilizada para obter todos os parametros e atualizar de uma unica 
+   * vez a colecao a ser utilizada
+   */
+    // Reseta o indice da posicao recebida
+    if((char)incomingByte == ';'){
+      posIndex = 0;
+      
+      // Transfere os dados e limpa o vetor temporario para novos dados
+      for(int i = 0; i < nPosDados; i++){
+        dadosPos[i] = tempPos[i];
+        tempPos[i] = 0;
+      }
+    }
+    else{
+      // Separador de dados
+      if((char)incomingByte == ':'){
+        posIndex++;        
+      }
+      else
+      {
+        // Vai deslocando o numero para o lado (o -48 converte de ASCII para inteiro de acordo com a tabela)
+        tempPos[posIndex] = tempPos[posIndex] * 10 + ((int)incomingByte - 48);
+      }
+
+    }
+}
 
 void setup() {
   // Inicialiando comunicacao serial com PC
@@ -61,23 +91,8 @@ void loop() {
     incomingByte = bluetooth.read();
   //  Serial.println((char)incomingByte);
 
-    // Reseta o indice da posicao recebida
-    if((char)incomingByte == ';'){
-      posIndex = 0;
-      dadosPos[posIndex] = 0;
-    }
-    else{
-      // Separador de dados
-      if((char)incomingByte == ':'){
-        posIndex++;        
-      }
-      else
-      {
-        // Vai deslocando o numero para o lado (o -48 converte de ASCII para inteiro de acordo com a tabela)
-        dadosPos[posIndex] = dadosPos[posIndex] * 10 + ((int)incomingByte - 48);
-      }
-
-    }
+    atualizaControle(incomingByte);
+    // Serial.println((char)incomingByte);
   }
 
   Serial.println(dadosPos[0]);
@@ -89,30 +104,23 @@ void loop() {
    */     
   
   
-  // Define os valores
- // valX = analogRead(analogPinX); 
- valX = dadosPos[0];
- // Serial.print("Valor X:"); 
-  Joystick.setXAxis(valX);
-  Joystick.setZAxis(valX);  
-//  Serial.print(valX);
+  // Define os valores obtidos pelo bluetooth
+  // X,Y,Z posicao
+  Joystick.setXAxis(dadosPos[0]);
+  Joystick.setYAxis(dadosPos[1]);  
+  Joystick.setZAxis(dadosPos[2]);  
   
-  valY = analogRead(analogPinY);   
-//  Serial.print("Valor Y:");
-  Joystick.setYAxis(valY);  
-
    // 3 Eixos Rotacao
-  Joystick.setRxAxis(valY);  
-  Joystick.setRyAxis(valY);  
-  Joystick.setRzAxis(valY);      
+  Joystick.setRxAxis(dadosPos[3]);  
+  Joystick.setRyAxis(dadosPos[4]);  
+  Joystick.setRzAxis(dadosPos[5]);      
 
   // Restante eixos
-  Joystick.setRudder(valY);
-  Joystick.setThrottle(valY);
-  Joystick.setAccelerator(valY);  
-  Joystick.setBrake(valY);
-  Joystick.setSteering(valY); 
-//  Serial.print(valY);
+  Joystick.setRudder(dadosPos[6]);
+  Joystick.setThrottle(dadosPos[7]);
+  Joystick.setAccelerator(dadosPos[8]);  
+  Joystick.setBrake(dadosPos[9]);
+  Joystick.setSteering(dadosPos[10]); 
 
  // Serial.println("\n");  
   
