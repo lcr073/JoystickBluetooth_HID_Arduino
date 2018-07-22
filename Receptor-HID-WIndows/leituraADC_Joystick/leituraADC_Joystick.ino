@@ -95,7 +95,7 @@ void loop() {
     // Serial.println((char)incomingByte);
   }
 
-  Serial.println(dadosPos[0]);
+//  Serial.println(dadosPos[0]);
   /*Serial.println(dadosPos[1]);
   Serial.println(dadosPos[2]);
   Serial.println(dadosPos[3]);

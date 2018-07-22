@@ -166,11 +166,14 @@ void loop() {
   
   strcat(Data,";"); 
 
-// Serial.print(Data);
+ Serial.print(Data);
  
  // Quebra de linha
-// Serial.println("");
-  
+ Serial.println("");
+
+  bluetooth.print(Data);
+
+  delay(300);
   if(bluetooth.available())  // If the bluetooth sent any characters
   {
     // Send any characters the bluetooth prints to the serial monitor
