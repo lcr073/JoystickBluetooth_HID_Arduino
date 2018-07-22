@@ -103,6 +103,74 @@ void setup() {
 
 void loop() {
 //  Anda();
+
+  int readX = analogRead(0);
+  int readY = analogRead(2);
+
+//  Serial.print("Val X:");
+//  Serial.print(valX);
+//  Serial.print("Val Y:");
+//  Serial.println(valY);  
+
+  char Data[150];
+  strcpy(Data,""); 
+
+// Posicao X,Y,Z
+  // X
+  char valX[5];
+  sprintf(valX, "%d", readX);
+  strcat(Data, valX);
+
+  // Y
+  strcat(Data,":");
+  char valY[5];
+  sprintf(valY, "%d", readY);  
+  strcat(Data, valY);
+
+  // Z  
+  strcat(Data,":");
+  strcat(Data,"0");
+
+// Rotacao X,Y,Z
+  // rotX  
+  strcat(Data,":");
+  strcat(Data,"0");  
+
+  // rotY  
+  strcat(Data,":");
+  strcat(Data,"0");  
+
+  // rotZ
+  strcat(Data,":");
+  strcat(Data,"0");    
+
+// Eixos
+  // Eixo 7
+  strcat(Data,"0");  
+
+  // Eixo 8
+  strcat(Data,":");
+  strcat(Data,"0");  
+
+  // Eixo 9
+  strcat(Data,":");
+  strcat(Data,"0");    
+
+  // Eixo 10
+  strcat(Data,":");
+  strcat(Data,"0");      
+
+  // Eixo 11
+  strcat(Data,":");
+  strcat(Data,"0");      
+  
+  strcat(Data,";"); 
+
+// Serial.print(Data);
+ 
+ // Quebra de linha
+// Serial.println("");
+  
   if(bluetooth.available())  // If the bluetooth sent any characters
   {
     // Send any characters the bluetooth prints to the serial monitor
