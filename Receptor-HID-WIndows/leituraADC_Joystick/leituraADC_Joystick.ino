@@ -24,41 +24,93 @@ const int nPosDados = 11;
 int dadosPos[nPosDados];
 int tempPos[nPosDados];
 
+// Variavel que chegou mensagem
+bool chegouMsg = false;
+
+char debug;
+
 void atualizaControle(char incomingByte){
   /*
    * Funcao utilizada para obter todos os parametros e atualizar de uma unica 
    * vez a colecao a ser utilizada
    */
+
     // Reseta o indice da posicao recebida
     if((char)incomingByte == ';'){
-      posIndex = 0;
-      
-      // Transfere os dados e limpa o vetor temporario para novos dados
-      for(int i = 0; i < nPosDados; i++){
-        dadosPos[i] = tempPos[i];
-        tempPos[i] = 0;
-      }
+
+      // Verifica se o indice esta correto para encerramento
+      // Chegou todos os parametros
+     // if(posIndex == 10){
+        posIndex = 0;
+        
+        // Transfere os dados e limpa o vetor temporario para novos dados
+        for(int i = 0; i < nPosDados; i++){
+          dadosPos[i] = tempPos[i];
+          tempPos[i] = 0;
+        }
+        // Verificacao se a mensagem chegou
+      //  Serial.println("OK");
+        chegouMsg = true;                            
+    //  }
+    //  else{
+        Serial.println("Mensagem ruim");
+     //   Serial.println(posIndex);
+        posIndex = 0;        
+     // }
     }
     else{
       // Separador de dados
       if((char)incomingByte == ':'){
-        posIndex++;        
+        posIndex++;                
       }
       else
       {
-        // Vai deslocando o numero para o lado (o -48 converte de ASCII para inteiro de acordo com a tabela)
-        tempPos[posIndex] = tempPos[posIndex] * 10 + ((int)incomingByte - 48);
+        //if((tempPos[posIndex] < 0) || (tempPos[posIndex] > 1023)){
+         //posIndex = 0;
+         //Serial.println("valor invalido"); 
+        //}
+        //else{
+          // Vai deslocando o numero para o lado (o -48 converte de ASCII para inteiro de acordo com a tabela)
+          tempPos[posIndex] = tempPos[posIndex] * 10 + ((int)incomingByte - 48);          
+        //}
       }
 
     }
+    
+}
+
+void conectaBT(){
+  // Manda bluetooth conectar com ultimo dispositivo pareado
+  bluetooth.print("$");
+  bluetooth.print("$");
+  bluetooth.print("$");  
+  delay(100);
+  bluetooth.println("C");
+}
+
+void configuraBaudBT(){
+  bluetooth.begin(115200);  // Baud Rate default do bluetooth
+  bluetooth.print("$");  // Print three times individually
+  bluetooth.print("$");
+  bluetooth.print("$");  // Enter command mode
+  delay(300);  // Short delay, wait for the Mate to send back CMD
+  bluetooth.println("U,57.6,N");  // Temporarily Change the baudrate to 9600, no parity  
+  // 115200 can be too fast at times for NewSoftSerial to relay the data reliably
+  bluetooth.begin(57600);  // Start bluetooth serial at 57600
+  delay(300);  // Short delay, wait for the Mate to send back CMD  
 }
 
 void setup() {
   // Inicialiando comunicacao serial com PC
-  Serial.begin(9600);
+  Serial.begin(57600);  
   
-  //Initialize the software serial
-  bluetooth.begin(9600);
+  // ### Inicio definicoes bluetooth ###
+  // Reconfigura o baudrate do bluetooth para o desejado
+  configuraBaudBT();
+
+  // Conecta bluetooth no ultimo pareado
+ // conectaBT();
+  // ### Fim definicoes bluetooth ###
 
   Joystick.begin();
   // 3 Eixos posicao
@@ -82,20 +134,74 @@ void setup() {
 void loop() {
   // Verificando se tem mensagem vinda da serial
   if(Serial.available() > 0){
-    bluetooth.println((char)Serial.read());
+    bluetooth.print((char)Serial.read());
   }
+
   
   // see if there's incoming serial data:
   if (bluetooth.available() > 0) {
     // read the oldest byte in the serial buffer:
     incomingByte = bluetooth.read();
-  //  Serial.println((char)incomingByte);
+   // Serial.println((char)incomingByte);
 
     atualizaControle(incomingByte);
-    // Serial.println((char)incomingByte);
+ //    Serial.print((char)incomingByte);
   }
 
-//  Serial.println(dadosPos[0]);
+// Caso a mensagem completa chegou
+if(chegouMsg){
+  chegouMsg = false;
+  Serial.print(dadosPos[0]);
+  Serial.print(":");  
+  Serial.print(dadosPos[1]);  
+  Serial.print(":");  
+  Serial.print(dadosPos[2]);    
+  Serial.print(":");  
+  Serial.print(dadosPos[3]);   
+  Serial.print(":");  
+  Serial.print(dadosPos[4]);     
+  Serial.print(":");  
+  Serial.print(dadosPos[5]);     
+  Serial.print(":");  
+  Serial.print(dadosPos[6]);  
+  Serial.print(":");  
+  Serial.print(dadosPos[7]);    
+  Serial.print(":");  
+  Serial.print(dadosPos[8]);   
+  Serial.print(":");  
+  Serial.print(dadosPos[9]);     
+  Serial.print(":");  
+  Serial.print(dadosPos[10]);       
+  Serial.println("");
+
+
+/*  Serial.print(tempPos[0]);
+  Serial.print(":");  
+  Serial.print(tempPos[1]);  
+  Serial.print(":");  
+  Serial.print(tempPos[2]);    
+  Serial.print(":");  
+  Serial.print(tempPos[3]);   
+  Serial.print(":");  
+  Serial.print(tempPos[4]);     
+  Serial.print(":");  
+  Serial.print(tempPos[5]);     
+  Serial.print(":");  
+  Serial.print(tempPos[6]);  
+  Serial.print(":");  
+  Serial.print(tempPos[7]);    
+  Serial.print(":");  
+  Serial.print(tempPos[8]);   
+  Serial.print(":");  
+  Serial.print(tempPos[9]);     
+  Serial.print(":");  
+  Serial.print(tempPos[10]);       
+  Serial.println("");  
+  */
+}
+//Serial.println(chegouMsg);
+//Serial.println(debug);
+ // Serial.println(tempPos[0]);
   /*Serial.println(dadosPos[1]);
   Serial.println(dadosPos[2]);
   Serial.println(dadosPos[3]);
@@ -111,17 +217,18 @@ void loop() {
   Joystick.setZAxis(dadosPos[2]);  
   
    // 3 Eixos Rotacao
-  Joystick.setRxAxis(dadosPos[3]);  
-  Joystick.setRyAxis(dadosPos[4]);  
-  Joystick.setRzAxis(dadosPos[5]);      
+//  Joystick.setRxAxis(dadosPos[3]);  
+//  Joystick.setRyAxis(dadosPos[4]);  
+ // Joystick.setRzAxis(dadosPos[5]);      
 
   // Restante eixos
-  Joystick.setRudder(dadosPos[6]);
-  Joystick.setThrottle(dadosPos[7]);
-  Joystick.setAccelerator(dadosPos[8]);  
-  Joystick.setBrake(dadosPos[9]);
-  Joystick.setSteering(dadosPos[10]); 
+//  Joystick.setRudder(dadosPos[6]);
+//  Joystick.setThrottle(dadosPos[7]);
+//  Joystick.setAccelerator(dadosPos[8]);  
+ // Joystick.setBrake(dadosPos[9]);
+ // Joystick.setSteering(dadosPos[10]); 
 
+//delay(200);
  // Serial.println("\n");  
   
   // Conversão para escrever no pino de saida
