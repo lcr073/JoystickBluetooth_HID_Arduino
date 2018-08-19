@@ -81,6 +81,7 @@ void atualizaControle(char incomingByte){
 
 void conectaBT(){
   // Manda bluetooth conectar com ultimo dispositivo pareado
+  delay(1000);
   bluetooth.print("$");
   bluetooth.print("$");
   bluetooth.print("$");  
@@ -109,7 +110,7 @@ void setup() {
   configuraBaudBT();
 
   // Conecta bluetooth no ultimo pareado
- // conectaBT();
+  conectaBT();
   // ### Fim definicoes bluetooth ###
 
   Joystick.begin();
@@ -151,7 +152,7 @@ void loop() {
 // Caso a mensagem completa chegou
 if(chegouMsg){
   chegouMsg = false;
-  Serial.print(dadosPos[0]);
+/*  Serial.print(dadosPos[0]);
   Serial.print(":");  
   Serial.print(dadosPos[1]);  
   Serial.print(":");  
@@ -173,31 +174,25 @@ if(chegouMsg){
   Serial.print(":");  
   Serial.print(dadosPos[10]);       
   Serial.println("");
+*/
 
+  // Define os valores obtidos pelo bluetooth
+  // X,Y,Z posicao
+  Joystick.setXAxis(dadosPos[0]);
+  Joystick.setYAxis(dadosPos[1]);  
+  Joystick.setZAxis(dadosPos[2]);  
+  
+   // 3 Eixos Rotacao
+  Joystick.setRxAxis(dadosPos[3]);  
+  Joystick.setRyAxis(dadosPos[4]);  
+ Joystick.setRzAxis(dadosPos[5]);      
 
-/*  Serial.print(tempPos[0]);
-  Serial.print(":");  
-  Serial.print(tempPos[1]);  
-  Serial.print(":");  
-  Serial.print(tempPos[2]);    
-  Serial.print(":");  
-  Serial.print(tempPos[3]);   
-  Serial.print(":");  
-  Serial.print(tempPos[4]);     
-  Serial.print(":");  
-  Serial.print(tempPos[5]);     
-  Serial.print(":");  
-  Serial.print(tempPos[6]);  
-  Serial.print(":");  
-  Serial.print(tempPos[7]);    
-  Serial.print(":");  
-  Serial.print(tempPos[8]);   
-  Serial.print(":");  
-  Serial.print(tempPos[9]);     
-  Serial.print(":");  
-  Serial.print(tempPos[10]);       
-  Serial.println("");  
-  */
+  // Restante eixos
+  Joystick.setRudder(dadosPos[6]);
+  Joystick.setThrottle(dadosPos[7]);
+  Joystick.setAccelerator(dadosPos[8]);  
+  Joystick.setBrake(dadosPos[9]);
+  Joystick.setSteering(dadosPos[10]); 
 }
 //Serial.println(chegouMsg);
 //Serial.println(debug);
@@ -209,24 +204,7 @@ if(chegouMsg){
   Serial.println(dadosPos[5]);  
    */     
   
-  
-  // Define os valores obtidos pelo bluetooth
-  // X,Y,Z posicao
-  Joystick.setXAxis(dadosPos[0]);
-  Joystick.setYAxis(dadosPos[1]);  
-  Joystick.setZAxis(dadosPos[2]);  
-  
-   // 3 Eixos Rotacao
-//  Joystick.setRxAxis(dadosPos[3]);  
-//  Joystick.setRyAxis(dadosPos[4]);  
- // Joystick.setRzAxis(dadosPos[5]);      
-
-  // Restante eixos
-//  Joystick.setRudder(dadosPos[6]);
-//  Joystick.setThrottle(dadosPos[7]);
-//  Joystick.setAccelerator(dadosPos[8]);  
- // Joystick.setBrake(dadosPos[9]);
- // Joystick.setSteering(dadosPos[10]); 
+ // delay(500);   
 
 //delay(200);
  // Serial.println("\n");  

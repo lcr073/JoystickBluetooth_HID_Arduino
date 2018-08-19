@@ -25,7 +25,7 @@ void setup() {
   // Define baud rate
   configuraBaudBT();
  
-  bluetooth.begin(57600);
+//  bluetooth.begin(57600);
 
   
 }
