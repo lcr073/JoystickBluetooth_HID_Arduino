@@ -40,8 +40,7 @@ void atualizaControle(char incomingByte){
 
       // Verifica se o indice esta correto para encerramento
       // Chegou todos os parametros
-     // if(posIndex == 10){
-        posIndex = 0;
+      if(posIndex == 10){
         
         // Transfere os dados e limpa o vetor temporario para novos dados
         for(int i = 0; i < nPosDados; i++){
@@ -49,34 +48,88 @@ void atualizaControle(char incomingByte){
           tempPos[i] = 0;
         }
         // Verificacao se a mensagem chegou
-      //  Serial.println("OK");
+        //Serial.println("OK");
         chegouMsg = true;                            
-    //  }
-    //  else{
-        Serial.println("Mensagem ruim");
+
+        // Reinicia o indice
+        posIndex = 0;
+      }
+      else{
+       // Serial.println("Mensagem ruim");
      //   Serial.println(posIndex);
+     
+        // Limpa o vetor temporario para novos dados
+        for(int i = 0; i < nPosDados; i++){
+          tempPos[i] = 0;
+        }
+
+        // Reinicia o indice
         posIndex = 0;        
-     // }
+      }
+    }
+
+    // Verifica se chegou o separador de informacao (:)
+    else if((char)incomingByte == ':'){
+      // Verifica se ja nao ouve um estouro do indice de informacao
+      if(posIndex < 10){
+        // Checa se o valor do indice esta valido antes de ir para o proximo
+          // Valor invalido (abaixo de 0 ou acima de 1023)
+         if((tempPos[posIndex] < 0) || (tempPos[posIndex] > 1023)){
+          // Limpa o vetor temporario para novos dados
+          for(int i = 0; i < nPosDados; i++){
+            tempPos[i] = 0;
+          }  
+          // Reinicia o indice
+          posIndex = 0;           
+        }
+
+        // Caso esteja valido
+        else{
+            // Incrementa o indice
+            posIndex++;        
+        }
+      }
+      // Houve um estouro do indice
+      else{
+        // Limpa o vetor temporario para novos dados
+        for(int i = 0; i < nPosDados; i++){
+          tempPos[i] = 0;
+        }
+
+        // Reinicia o indice
+        posIndex = 0;   
+      }
     }
     else{
-      // Separador de dados
-      if((char)incomingByte == ':'){
-        posIndex++;                
-      }
-      else
-      {
-        //if((tempPos[posIndex] < 0) || (tempPos[posIndex] > 1023)){
-         //posIndex = 0;
-         //Serial.println("valor invalido"); 
-        //}
-        //else{
+      // Valida se o que chegou e um digito entre 0 e 9
+      // Digito valido
+      if((((int)incomingByte - 48) >= 0) || (((int)incomingByte - 48) <= 9)){
           // Vai deslocando o numero para o lado (o -48 converte de ASCII para inteiro de acordo com a tabela)
           tempPos[posIndex] = tempPos[posIndex] * 10 + ((int)incomingByte - 48);          
-        //}
-      }
 
+          // Valida se o valor ainda esta na faixa valida ou nao
+          // Faixa invalida
+            if((tempPos[posIndex] < 0) || (tempPos[posIndex] > 1023)){
+              // Limpa o vetor temporario para novos dados
+              for(int i = 0; i < nPosDados; i++){
+                tempPos[i] = 0;
+              }
+  
+              // Reinicia o indice
+              posIndex = 0;   
+            }
+      }
+      // Digito nao valido
+      else{
+        // Limpa o vetor temporario para novos dados
+        for(int i = 0; i < nPosDados; i++){
+          tempPos[i] = 0;
+        }
+
+        // Reinicia o indice
+        posIndex = 0;           
+      }
     }
-    
 }
 
 void conectaBT(){
@@ -152,6 +205,8 @@ void loop() {
 // Caso a mensagem completa chegou
 if(chegouMsg){
   chegouMsg = false;
+
+  // Debug para printar os valores que estao no vetor de posicao
 /*  Serial.print(dadosPos[0]);
   Serial.print(":");  
   Serial.print(dadosPos[1]);  
