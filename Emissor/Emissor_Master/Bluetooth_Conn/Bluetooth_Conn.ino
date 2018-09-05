@@ -1,11 +1,26 @@
-#define SCL_PIN 7
-#define SCL_PORT PORTD
-#define SDA_PIN 6
-#define SDA_PORT PORTD
+//#define SCL_PIN 7
+//#define SCL_PORT PORTD
+//#define SDA_PIN 6
+//#define SDA_PORT PORTD
 
-// Biblioteca utilizada no I2C
-#include <SoftI2CMaster.h>
-#include <SoftWire.h>
+// Biblioteca utilizada no I2C (Definido na biblioteca MPU6050)
+//#include <SoftI2CMaster.h>
+//#include <SoftWire.h>
+
+// Biblioteca com as funcoes basicas do MPU6050
+#include <MPU6050.h>
+
+// Criando uma referencia ao tipo do MPU6050
+MPU6050 mpu;
+
+// Timers
+unsigned long timer = 0;
+float timeStep = 0.01;
+
+// Pitch(y), Roll(x) and Yaw(z) values
+float pitch = 0;
+float roll = 0;
+float yaw = 0;
 
 // Biblioteca de serial em outras portas
 #include <SoftwareSerial.h>
@@ -13,7 +28,7 @@
 int bluetoothTx = 2;
 int bluetoothRx = 3;
 
-// Cria objeto para I2C
+// Cria objeto para I2C (Definido na biblioteca MPU6050)
 //SoftWire Wire = SoftWire();
 
 // Cria objeto para outra serial
@@ -51,14 +66,34 @@ void setup() {
   Serial.begin(57600);
 
   // ### Inicio ligar I2C ###
-//  Wire.begin();
-//  Wire.beginTransmission(MPU);
-//  Wire.write(0x6B);
+  //Wire.begin();
+  //Wire.beginTransmission(MPU);
+  //Wire.write(0x6B);
 
   // Inicializando o MPU-6050
- // Wire.write(0);
- // Wire.endTransmission(true);
+  //Wire.write(0);
+  //Wire.endTransmission(true);
   // ### Fim ligacao I2C ###  
+
+
+  // #### Definicoes Giroscopio ####
+
+  // Initialize MPU6050
+  while(!mpu.begin(MPU6050_SCALE_2000DPS, MPU6050_RANGE_2G))
+  {
+    Serial.println("Could not find a valid MPU6050 sensor, check wiring!");
+    delay(500);
+  }
+  
+  // Calibrate gyroscope. The calibration must be at rest.
+  // If you don't want calibrate, comment this line.
+  mpu.calibrateGyro();
+
+  // Set threshold sensivty. Default 3.
+  // If you don't want use threshold, comment this line or set 0.
+  // mpu.setThreshold(3);
+  // #### Fim definicoes Giroscopio ####
+
   
   // ### Inicio definicoes bluetooth ###  
   // Altera velocidade de comunicacao default do modulo bluetooth
@@ -83,29 +118,59 @@ void loop() {
    * 
    * posX:posY:posZ:rotX:RotY,RotZ:Dedo1:Dedo2:Dedo3:Dedo4:Dedo5;
    */
+   
+  // Pega o tempo para o calculo do giroscopio
+  timer = millis();
+
+  // Read normalized values
+  Vector norm = mpu.readNormalizeGyro();
+
+  // Calculate Pitch, Roll and Yaw
+  pitch = pitch + norm.YAxis * timeStep;
+  roll = roll + norm.XAxis * timeStep;
+  yaw = yaw + norm.ZAxis * timeStep;  
+
+  // Limitando eixos ate 360
+  // Limitando Pitch
+  if(pitch < 0){ pitch =360; }
+  else if(pitch > 360){ pitch =0; }
   
+  // Limitando Roll
+  if(roll < 0){ roll =360; }
+  else if(roll > 360){ roll =0; }  
+  // Limitando Yaw
+  if(yaw < 0){ yaw =360; }
+  else if(yaw > 360){ yaw =0; }  
+
+  // Transformando em valores de 0 a 1023
+  // Transformando roll
+  int rollT = (int)(roll * 2.84166);
+  // Transformando pitch
+  int pitchT = (int)(pitch * 2.84166);
+  // Transformando yaw
+  int yawT = (int)(yaw * 2.84166);  
+
   // Iniciando captura valores do MPU-6050
-/*  Wire.beginTransmission(MPU);
-  Wire.write(0x3B);
-  Wire.endTransmission(false);
+  //Wire.beginTransmission(MPU);
+  //Wire.write(0x3B);
+  //Wire.endTransmission(false);
   
   //Solicita os dados do sensor
-  Wire.requestFrom(MPU,14,true);  
+ // Wire.requestFrom(MPU,14,true);  
   
   //Armazena o valor dos sensores nas variaveis correspondentes
-  AcX=Wire.read()<<8|Wire.read(); //0x3B (ACCEL_XOUT_H) & 0x3C (ACCEL_XOUT_L)     
-  AcY=Wire.read()<<8|Wire.read(); //0x3D (ACCEL_YOUT_H) & 0x3E (ACCEL_YOUT_L)
-  AcZ=Wire.read()<<8|Wire.read(); //0x3F (ACCEL_ZOUT_H) & 0x40 (ACCEL_ZOUT_L)
-  Tmp=Wire.read()<<8|Wire.read(); //0x41 (TEMP_OUT_H) & 0x42 (TEMP_OUT_L)
-  GyX=Wire.read()<<8|Wire.read(); //0x43 (GYRO_XOUT_H) & 0x44 (GYRO_XOUT_L)
-  GyY=Wire.read()<<8|Wire.read(); //0x45 (GYRO_YOUT_H) & 0x46 (GYRO_YOUT_L)
-  GyZ=Wire.read()<<8|Wire.read(); //0x47 (GYRO_ZOUT_H) & 0x48 (GYRO_ZOUT_L)
+  //AcX=Wire.read()<<8|Wire.read(); //0x3B (ACCEL_XOUT_H) & 0x3C (ACCEL_XOUT_L)     
+  //AcY=Wire.read()<<8|Wire.read(); //0x3D (ACCEL_YOUT_H) & 0x3E (ACCEL_YOUT_L)
+  //AcZ=Wire.read()<<8|Wire.read(); //0x3F (ACCEL_ZOUT_H) & 0x40 (ACCEL_ZOUT_L)
+  //Tmp=Wire.read()<<8|Wire.read(); //0x41 (TEMP_OUT_H) & 0x42 (TEMP_OUT_L)
+  //GyX=Wire.read()<<8|Wire.read(); //0x43 (GYRO_XOUT_H) & 0x44 (GYRO_XOUT_L)
+  //GyY=Wire.read()<<8|Wire.read(); //0x45 (GYRO_YOUT_H) & 0x46 (GYRO_YOUT_L)
+  //GyZ=Wire.read()<<8|Wire.read(); //0x47 (GYRO_ZOUT_H) & 0x48 (GYRO_ZOUT_L)
 
-*/
 
-  GyX = 0;
-  GyY = 0;
-  GyZ = 0;
+ // GyX = 0;
+ // GyY = 0;
+ // GyZ = 0;
   
   // Le valores dos ADC's
   // Le posicoes
@@ -142,20 +207,20 @@ void loop() {
 // Rotacao X,Y,Z
   // rotX  
   strcat(Data,":");
-  char rotX[5];
-  sprintf(rotX, "%d", GyX);  
+  char rotX[5]; 
+  sprintf(rotX, "%d", rollT);  
   strcat(Data, rotX);
 
   // rotY  
   strcat(Data,":");
   char rotY[5];
-  sprintf(rotY, "%d", GyY);  
+  sprintf(rotY, "%d", pitchT);  
   strcat(Data, rotY);
 
   // rotZ
   strcat(Data,":");
-  char rotZ[5];
-  sprintf(rotZ, "%d", GyZ);  
+  char rotZ[5]; 
+  sprintf(rotZ, "%d", yawT);  
   strcat(Data, rotZ);
   
 // Eixos
@@ -187,7 +252,6 @@ void loop() {
 // Serial.println("");
 
   bluetooth.print(Data);
-
   delay(40);
   if(bluetooth.available())  // If the bluetooth sent any characters
   {
@@ -211,6 +275,7 @@ void loop() {
         //  Manda os caracteres enviados pela Serial do PC para o bluetooth
         bluetooth.print((char)Serial.read());      
 
-
+  // Wait to full timeStep period
+  delay((timeStep*1000) - (millis() - timer));
   }
 }
