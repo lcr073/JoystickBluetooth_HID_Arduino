@@ -13,9 +13,12 @@
 // Criando uma referencia ao tipo do MPU6050
 MPU6050 mpu;
 
+int bootou = 0;
+
 // Timers
 unsigned long timer = 0;
-float timeStep = 0.01;
+float timeStep = 0.05;
+// float timeStep = 0.01;
 
 // Pitch(y), Roll(x) and Yaw(z) values
 float pitch = 0;
@@ -59,6 +62,21 @@ void DefineMaster(){
     // Habilitando modo de pareamentro
     Serial.write("SM,6");
   
+}
+
+void bootando(){
+  // #### Definicoes Giroscopio ####
+
+  // Initialize MPU6050
+  while(!mpu.begin(MPU6050_SCALE_2000DPS, MPU6050_RANGE_2G))
+  {
+    Serial.println("Could not find a valid MPU6050 sensor, check wiring!");
+    delay(500);
+  }
+  
+  // Calibrate gyroscope. The calibration must be at rest.
+  // If you don't want calibrate, comment this line.
+  mpu.calibrateGyro();
 }
 
 void setup() {
@@ -118,6 +136,11 @@ void loop() {
    * 
    * posX:posY:posZ:rotX:RotY,RotZ:Dedo1:Dedo2:Dedo3:Dedo4:Dedo5;
    */
+
+   if(bootou == 0){
+      bootando();
+      bootou = 1;
+   }
    
   // Pega o tempo para o calculo do giroscopio
   timer = millis();
@@ -175,15 +198,15 @@ void loop() {
   // Le valores dos ADC's
   // Le posicoes
   int readX = analogRead(0);
-  int readY = analogRead(2);
-  //int readZ = analogRead(2);  
+  int readY = analogRead(1);
+  int readZ = analogRead(2);  
 
   // Le flex sensors para os dedos
-  //int dedo1 = analogRead(3)
-  //int dedo2 = analogRead(4)
-  //int dedo3 = analogRead(5)
-  //int dedo4 = analogRead(6)
-  //int dedo5 = analogRead(7)
+  int dedo1 = analogRead(3);
+  int dedo2 = analogRead(4);
+  int dedo3 = analogRead(5);
+  int dedo4 = analogRead(6);
+  int dedo5 = analogRead(7);
 
   char Data[150];
   strcpy(Data,""); 
@@ -202,7 +225,10 @@ void loop() {
 
   // Z  
   strcat(Data,":");
-  strcat(Data,"0");
+  char valZ[5];
+  sprintf(valZ, "%d", readZ);  
+  strcat(Data, valZ);  
+ // strcat(Data,"0");
 
 // Rotacao X,Y,Z
   // rotX  
@@ -226,23 +252,33 @@ void loop() {
 // Eixos
   // Eixo 7
   strcat(Data,":");  
-  strcat(Data,"0");  
+  char flex1[5]; 
+  sprintf(flex1, "%d", dedo1);  
+  strcat(Data, flex1);
 
   // Eixo 8
   strcat(Data,":");
-  strcat(Data,"0");  
+  char flex2[5]; 
+  sprintf(flex2, "%d", dedo2);  
+  strcat(Data, flex2);
 
   // Eixo 9
   strcat(Data,":");
-  strcat(Data,"0");    
+  char flex3[5]; 
+  sprintf(flex3, "%d", dedo3);  
+  strcat(Data, flex3);    
 
   // Eixo 10
   strcat(Data,":");
-  strcat(Data,"0");      
+  char flex4[5]; 
+  sprintf(flex4, "%d", dedo4);  
+  strcat(Data, flex4);     
 
   // Eixo 11
   strcat(Data,":");
-  strcat(Data,"0");      
+  char flex5[5]; 
+  sprintf(flex5, "%d", dedo5);  
+  strcat(Data, flex5);     
   
   strcat(Data,";"); 
 

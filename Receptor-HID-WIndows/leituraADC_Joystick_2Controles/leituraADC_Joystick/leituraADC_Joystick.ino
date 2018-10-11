@@ -2,10 +2,11 @@
 #include "SoftwareSerial.h"
 #include <Joystick.h>
 
-// Criando um joystick
-Joystick_ Joystick(0x03,0x04,0,0,true,true,true,true,true,true,true,true,true,true,true);
+// Criando um joystick (Pos,Rot)
+Joystick_ Joystick(0x03,0x04,0,0,true,true,true,true,true,true,false,false,false,false,false);
 
-//Joystick_ Joystick2(0x04,0x04,0,0,true,true,true,true,true,true,true,true,true,true,true);
+// Criando Joystick para flexsesors
+Joystick_ Joystick2(0x04,0x04,0,0,true,true,true,true,true,false,false,false,false,false,false);
 
 //Create a new software  serial
 SoftwareSerial bluetooth(10, 11); //TX, RX (Bluetooth){RX no pino 10 pela necessidade de RX do arduino Leonardo}
@@ -181,9 +182,13 @@ void setup() {
   // ### Fim definicoes bluetooth ###
   // ############## FIM RN-42 ########################
 
- // Joystick2.begin();
-  
+
+  // Inicia leitura valores 
   Joystick.begin();
+
+  // Inicia valores flex
+  Joystick2.begin();  
+  
   // 3 Eixos posicao
   Joystick.setXAxisRange(0,1023);
   Joystick.setYAxisRange(0,1023);
@@ -195,11 +200,17 @@ void setup() {
   Joystick.setRzAxisRange(0,1023);      
 
   // Restante eixos
-  Joystick.setRudderRange(0,1023);
-  Joystick.setThrottleRange(0,1023);
-  Joystick.setAcceleratorRange(0,1023);  
-  Joystick.setBrakeRange(0,1023);
-  Joystick.setSteeringRange(0,1023);
+  Joystick2.setXAxisRange(0,1023);
+  Joystick2.setYAxisRange(0,1023);
+  Joystick2.setZAxisRange(0,1023); 
+  Joystick2.setRxAxisRange(0,1023);  
+  Joystick2.setRyAxisRange(0,1023);  
+  
+  //Joystick.setRudderRange(0,1023);
+  //Joystick.setThrottleRange(0,1023);
+  //Joystick.setAcceleratorRange(0,1023);  
+  //Joystick.setBrakeRange(0,1023);
+  //Joystick.setSteeringRange(0,1023);
 }
 
 void loop() {
@@ -256,16 +267,22 @@ if(chegouMsg){
   Joystick.setZAxis(dadosPos[2]);  
   
    // 3 Eixos Rotacao
-  Joystick.setRxAxis(dadosPos[3]);  
-  Joystick.setRyAxis(dadosPos[4]);  
- Joystick.setRzAxis(dadosPos[5]);      
+  Joystick.setRxAxis((dadosPos[3]/2)+512);  
+  Joystick.setRyAxis((dadosPos[4]/2)+512);  
+  Joystick.setRzAxis((dadosPos[5]/2)+512);      
 
   // Restante eixos
-  Joystick.setRudder(dadosPos[6]);
-  Joystick.setThrottle(dadosPos[7]);
-  Joystick.setAccelerator(dadosPos[8]);  
-  Joystick.setBrake(dadosPos[9]);
-  Joystick.setSteering(dadosPos[10]); 
+  Joystick2.setXAxis(dadosPos[6]);
+  Joystick2.setYAxis(dadosPos[7]);  
+  Joystick2.setZAxis(dadosPos[8]);  
+  Joystick2.setRxAxis(dadosPos[9]);  
+  Joystick2.setRyAxis(dadosPos[10]);  
+ 
+  //Joystick.setRudder(dadosPos[6]);
+  //Joystick.setThrottle(dadosPos[7]);
+  //Joystick.setAccelerator(dadosPos[8]);  
+  //Joystick.setBrake(dadosPos[9]);
+  //Joystick.setSteering(dadosPos[10]); 
 }
 //Serial.println(chegouMsg);
 //Serial.println(debug);

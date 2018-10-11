@@ -1,8 +1,8 @@
 // Biblioteca de serial em outras portas
 #include <SoftwareSerial.h>
 
-int bluetoothTx = 2;
-int bluetoothRx = 3;
+int bluetoothTx = 10;
+int bluetoothRx = 11;
 
 // Cria objeto para outra serial
 SoftwareSerial bluetooth(bluetoothTx,bluetoothRx);
